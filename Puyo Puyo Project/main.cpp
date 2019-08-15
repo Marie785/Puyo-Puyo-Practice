@@ -6,7 +6,7 @@ This is a personal project for my own practice. I've decided to recreate the gam
  
 Here's how the game works:
  -There are 5 different puyo colors, but the game will randomly pick 4 to give to you for the whole game
- -Each time, you will get a "pair" puyos stuck together, and you can stack them in any direction you want
+ -Each time, you will get a "pair" of puyos stuck together, and you can stack them in any cardinal direction you want
     -The color of the pair will be within the group of 4 colors picked for your game
  -Connect 4 or more of the same colored Puyos to pop them
  -build up chains in your game by stacking your Puyos in a certain way!
@@ -26,18 +26,28 @@ int main()
             -width, and then the height
         -and then the title of the application, which will be put in double quotations (so, it takes in a
          string as its second argument)*/
-    sf::RenderWindow window(sf::VideoMode(1080, 1080), "Puyo Puyo!");
-    sf::Texture texture;
-    sf::Sprite sprite;
+    /*We can also add in other parameters, but those first two are necessary to put in. sf::Style::Titlebar allows us to keep
+        the title of the window that we have.
+        sf::Style::Close prevents the user from being able to resize the window.*/
+    sf::RenderWindow window(sf::VideoMode(1200, 1200), "Puyo Puyo!", sf::Style::Titlebar | sf::Style::Close);
+    window.setFramerateLimit(60);   //this will set the maximum framerate this game can run at to 60
     
-    //checks to make sure the image exists
-    if(!texture.loadFromFile("image/Gasp!copy.png"))
-    {
-        std::cout << "The texture could not be found." << std::endl;
-    }
-    sprite.setTexture(texture);
-    sprite.setOrigin(232, 215.5);
-    sprite.setPosition(540, 540);
+    //loading the images from my image file into textures
+    sf::Texture green, drk_green, pink_puyo;
+    green.loadFromFile("image/Puyo_Background.png");
+    drk_green.loadFromFile("image/border1.png");
+    pink_puyo.loadFromFile("image/Pink_Puyo.png");
+    
+    /*putting the textures onto sprites
+     Putting background(green) is a shorter way of doing background.setTexture(green)*/
+    sf::Sprite background(green), border(drk_green), puyo1(pink_puyo);
+    border.setOrigin(291.5, 500);    //This is needed because this sets the origin of the image to be wherever I want it to be, instead of in the corner                                    of the image, so this way, when I set the position of the sprite, it is centered at that position based on the                                       origin I gave it,not based on the corner of the image.
+                                   //The coordinates work as followed: (width in pixels of image, height in pixels of image);
+    border.setPosition(600, 600);  //This sets where the sprite will be within the window. setPosition(width in pixels of window, height);
+
+    puyo1.setOrigin(37, 37);
+    puyo1.setPosition(550, 189);    //This is where we start puyos on their boards
+    
     
     
     //This is where most of your application stuff is done, like what happens in the window
@@ -54,31 +64,52 @@ int main()
                 window.close();
             if(event.type == sf::Event::KeyPressed)
             {
-                 std::cout << "control:" << event.key.control << std::endl;
-                
-                if(event.key.code == sf::Keyboard::Up)
-                    sprite.move(0, -10);
-                else if(event.key.code == sf::Keyboard::Left)
-                    sprite.move(-10, 0);
-                else if(event.key.code == sf::Keyboard::Down)
-                    sprite.move(0, 10);
+                /*if(event.key.code == sf::Keyboard::Up)
+                    puyo1.move(0, -10);*/
+                if(event.key.code == sf::Keyboard::Left)
+                {
+                    //If the puyo is at the very left of the border, then we won't allow it to move outside of the border
+                    if(puyo1.getPosition().x > 379.68)
+                        puyo1.move(-85.16, 0);
+                    continue;
+                }
                 else if(event.key.code == sf::Keyboard::Right)
-                    sprite.move(10, 0);
+                {
+                    //If the puyo is at the very right of the border, then we won't allow it to move outside of the border
+                    if(puyo1.getPosition().x < 805.48)
+                        puyo1.move(85.16, 0);
+                    continue;
+                }
+                else if(event.key.code == sf::Keyboard::Down)
+                {
+                    //If the puyo is at the very bottom of the border, then we won't allow it to move outside of the border
+                    if(puyo1.getPosition().y < 969.8)
+                        puyo1.move(0, 74.6);
+                    continue;
+                }
                 else if(event.key.code == sf::Keyboard::D)
-                    sprite.rotate(10.f);
+                    puyo1.rotate(90.f);
                 else if(event.key.code == sf::Keyboard::A)
-                    sprite.rotate(-10.f);
-                else if(event.key.code == sf::Keyboard::S)
-                    sprite.setRotation(0.f);
+                    puyo1.rotate(-90.f);
+                /*else if(event.key.code == sf::Keyboard::S)
+                    puyo1.setRotation(0.f);*/
             }
         }
         
         //Update the game
-        //This just clears the contents of the window
+        /*This just clears the contents of the window and updates what is on there. Without this, whenever we move the sprite "border" around,
+            if we were to not have the background on there, for example, then instead of the sprite looking like it's moving, it will look like
+            it is leaving a trail instead. (removing the background sprite helps see that)*/
         window.clear();
-            //draw object here
-            window.draw(sprite);
         
+        //draw object here
+        //we put window.draw() per sprite that we want to display onto the window
+        //Yes, the order DOES matter
+        window.draw(background);
+        window.draw(puyo1);
+        window.draw(border);
+        
+        //This just displays the window itself. Without this you wouldn't see anything.
         window.display();
     }
     
